@@ -10,7 +10,7 @@ from modelscope.utils.constant import Tasks
 from MobileAgent.prompt import opreation_prompt, choose_opreation_prompt
 from MobileAgent.icon_localization import det
 from MobileAgent.text_localization import ocr
-from MobileAgent.api import inference_chat
+from MobileAgent.api import inference_chat, inference_chat_ollama
 from MobileAgent.crop import crop, crop_for_clip, clip_for_icon
 from MobileAgent.chat import init_chat, add_response, add_multiimage_response
 from MobileAgent.controller import get_size, get_screenshot, tap, type, slide, back, back_to_desktop
@@ -18,7 +18,8 @@ import re
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--instruction", type=str)
+    parser.add_argument("--instruction", type=str, default="Open the calendar to set an event on today afternoon at "
+                                                           "3:00, named Group Meeting.")
     parser.add_argument("--adb_path", type=str)
     parser.add_argument("--api", type=str)
     args = parser.parse_args()
@@ -64,7 +65,8 @@ def run(args):
         operation_history = add_response("user", opreation_prompt, operation_history, image)
         
         while True:
-            response = inference_chat(operation_history, args.api)
+            # response = inference_chat(operation_history, args.api)
+            response = inference_chat_ollama(operation_history, args.api)
             
             try:
                 observation = re.search(r"Observation:(.*?)\n", response).group(1).strip()
@@ -129,7 +131,8 @@ def run(args):
                 
                 ocr_prompt = f"The {str(len(out_coordinate))} red boxes are numbered 1 through {str(len(out_coordinate))}. Which red box with \"{parameter}\" do you want to click on? Please output just one number from 1 to {str(len(out_coordinate))}, such as 1, 2......"
                 choose_chat = add_multiimage_response("user", ocr_prompt, choose_chat, images)
-                choose_response = inference_chat(choose_chat, args.api)
+                # choose_response = inference_chat(choose_chat, args.api)
+                choose_response = inference_chat_ollama(choose_chat, args.api)
                 
                 final_box = hash[int(choose_response)]
                 tap_coordinate = [(final_box[0]+final_box[2])/2, (final_box[1]+final_box[3])/2]

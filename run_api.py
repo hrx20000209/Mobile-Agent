@@ -21,19 +21,19 @@ def run(args):
 
     first_request = 0
     session_id = ""
-    
+
     while True:
         first_request += 1
 
         get_screenshot(args.adb_path)
         image = "./screenshot/screenshot.jpg"
-        
+
         while True:
             if first_request == 1:
                 response = get_action(image, args.instruction, '', args.url, args.token)
             else:
                 response = get_action(image, '', session_id, args.url, args.token)
-                
+
             try:
                 action = response.json()['output']['action']
                 parameter = response.json()['output']['parameter']
@@ -49,24 +49,25 @@ def run(args):
             if parameter != '':
                 print(parameter)
             break
-        
+
         elif action == 'tap':
             parameter = json.loads(parameter)
             tap(args.adb_path, parameter[0], parameter[1])
-        
+
         elif action == 'slide':
             parameter = json.loads(parameter)
             slide(args.adb_path, parameter[0][0], parameter[0][1], parameter[1][1], parameter[1][0])
-            
+
         elif "type" in action:
             parameter = str(parameter)
             type(args.adb_path, parameter)
-        
+
         elif "back" in action:
             back(args.adb_path)
 
         elif "exit" in action:
             back_to_desktop(args.adb_path)
+
 
 if __name__ == "__main__":
     args = get_args()
